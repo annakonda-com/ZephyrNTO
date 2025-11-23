@@ -91,7 +91,9 @@ private fun Content(
             viewModel.onIntent(AuthIntent.Send(inputText))
         },
         enabled = true
-    ) {
-        Text(stringResource(R.string.auth_sign_in))
+
+    ) { Text(stringResource(R.string.auth_sign_in))
+
+
     }
 }

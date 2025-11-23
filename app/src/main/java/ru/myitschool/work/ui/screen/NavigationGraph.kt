@@ -15,6 +15,8 @@ import ru.myitschool.work.ui.nav.AuthScreenDestination
 import ru.myitschool.work.ui.nav.BookScreenDestination
 import ru.myitschool.work.ui.nav.MainScreenDestination
 import ru.myitschool.work.ui.screen.auth.AuthScreen
+import ru.myitschool.work.ui.screen.book.BookScreen
+import ru.myitschool.work.ui.screen.main.MainScreen
 
 @Composable
 fun AppNavHost(
@@ -32,18 +34,10 @@ fun AppNavHost(
             AuthScreen(navController = navController)
         }
         composable<MainScreenDestination> {
-            Box(
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "Hello")
-            }
+            MainScreen(navController = navController)
         }
         composable<BookScreenDestination> {
-            Box(
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "Hello")
-            }
+            BookScreen(navController = navController)
         }
     }
 }
