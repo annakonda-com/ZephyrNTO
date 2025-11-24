@@ -18,21 +18,23 @@ class AuthViewModel : ViewModel() {
     private val _uiState = MutableStateFlow<AuthState>(AuthState.Data)
     val uiState: StateFlow<AuthState> = _uiState.asStateFlow()
 
-    private val _actionFlow: MutableSharedFlow<Unit> = MutableSharedFlow()
-    val actionFlow: SharedFlow<Unit> = _actionFlow
+    private val _actionFlow: MutableSharedFlow<AuthAction> = MutableSharedFlow()
+    val actionFlow: SharedFlow<AuthAction> = _actionFlow
 
     fun onIntent(intent: AuthIntent) {
         when (intent) {
             is AuthIntent.Send -> {
-                viewModelScope.launch(Dispatchers.Default) {
+                viewModelScope.launch(Dispatchers.IO) {
                     _uiState.update { AuthState.Loading }
-                    checkAndSaveAuthCodeUseCase.invoke("9999").fold(
+                    checkAndSaveAuthCodeUseCase.invoke(intent.text).fold(
                         onSuccess = {
-                            _actionFlow.emit(Unit)
+                             // TODO: Поведение при успехе
                         },
                         onFailure = { error ->
                             error.printStackTrace()
-                            _actionFlow.emit(Unit)
+                            if (error.message != null) {
+                                _actionFlow.emit(AuthAction.ShowError(error.message.toString()))
+                            }
                         }
                     )
                 }

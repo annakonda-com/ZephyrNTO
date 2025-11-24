@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import ru.myitschool.work.R
+import ru.myitschool.work.core.OurConstants.SHABLON
 import ru.myitschool.work.core.TestIds
 import ru.myitschool.work.ui.nav.MainScreenDestination
 
@@ -74,6 +75,7 @@ private fun Content(
     state: AuthState.Data
 ) {
     var inputText by remember { mutableStateOf("") }
+    var errorText : String? by remember { mutableStateOf(null) }
     Spacer(modifier = Modifier.size(16.dp))
     TextField(
         modifier = Modifier.testTag(TestIds.Auth.CODE_INPUT).fillMaxWidth(),
@@ -88,12 +90,20 @@ private fun Content(
     Button(
         modifier = Modifier.testTag(TestIds.Auth.SIGN_BUTTON).fillMaxWidth(),
         onClick = {
-            viewModel.onIntent(AuthIntent.Send(inputText))
+            if (!inputText.isEmpty() || inputText.length == 4 || inputText.matches(Regex(SHABLON))){
+                viewModel.onIntent(AuthIntent.Send(inputText))
+            }
         },
         enabled = true
 
-    ) { Text(stringResource(R.string.auth_sign_in))
+    ) { Text(stringResource(R.string.auth_sign_in)) }
+    ShowError(errorText) // TODO: раскидать в коде когда показывается ошибка и когда нет
 
+}
 
+@Composable
+fun ShowError(text : String?){
+    if (text != null){
+        Text(text, modifier = Modifier.testTag(TestIds.Auth.ERROR))
     }
 }
