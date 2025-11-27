@@ -1,5 +1,6 @@
 package ru.myitschool.work.ui.screen.auth
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.myitschool.work.data.repo.AuthRepository
+import ru.myitschool.work.data.source.DataStoreDataSource.authFlow
 import ru.myitschool.work.domain.auth.CheckAndSaveAuthCodeUseCase
 
 class AuthViewModel : ViewModel() {
@@ -28,7 +30,7 @@ class AuthViewModel : ViewModel() {
                     _uiState.update { AuthState.Loading }
                     checkAndSaveAuthCodeUseCase.invoke(intent.text).fold(
                         onSuccess = {
-                             // TODO: Поведение при успехе
+                            _uiState.update { AuthState.LoggedIn }
                         },
                         onFailure = { error ->
                             error.printStackTrace()
@@ -40,6 +42,20 @@ class AuthViewModel : ViewModel() {
                 }
             }
             is AuthIntent.TextInput -> Unit
+            is AuthIntent.CheckLogIntent -> {
+                viewModelScope.launch {
+                    _uiState.update { AuthState.Loading }
+                    authFlow().collect {
+                        Log.d("AnnaKonda", it)
+                        if (it != "0"){
+                            _uiState.update { AuthState.LoggedIn }
+                        } else {
+                            _uiState.update { AuthState.Data }
+                        }
+                    }
+                }
+            }
         }
     }
+
 }

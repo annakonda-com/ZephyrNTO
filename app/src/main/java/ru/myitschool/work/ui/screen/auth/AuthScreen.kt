@@ -39,13 +39,13 @@ fun AuthScreen(
     navController: NavController
 ) {
     val state by viewModel.uiState.collectAsState()
+    viewModel.onIntent(AuthIntent.CheckLogIntent)
 
     LaunchedEffect(Unit) {
         viewModel.actionFlow.collect {
             navController.navigate(MainScreenDestination)
         }
     }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -64,6 +64,9 @@ fun AuthScreen(
                 CircularProgressIndicator(
                     modifier = Modifier.size(64.dp)
                 )
+            }
+            is AuthState.LoggedIn -> {
+                navController.navigate(MainScreenDestination)
             }
         }
     }
@@ -90,7 +93,7 @@ private fun Content(
     Button(
         modifier = Modifier.testTag(TestIds.Auth.SIGN_BUTTON).fillMaxWidth(),
         onClick = {
-            if (!inputText.isEmpty() || inputText.length == 4 || inputText.matches(Regex(SHABLON))){
+            if (!inputText.isEmpty() && inputText.length == 4 && inputText.matches(Regex(SHABLON))){
                 viewModel.onIntent(AuthIntent.Send(inputText))
             }
         },
