@@ -1,6 +1,7 @@
 package ru.myitschool.work.ui.screen.auth
 
 import android.util.Log
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -11,6 +12,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ru.myitschool.work.App
+import ru.myitschool.work.R
 import ru.myitschool.work.data.repo.AuthRepository
 import ru.myitschool.work.data.source.DataStoreDataSource.authFlow
 import ru.myitschool.work.domain.auth.CheckAndSaveAuthCodeUseCase
@@ -37,19 +40,23 @@ class AuthViewModel : ViewModel() {
                             if (error.message != null) {
                                 _actionFlow.emit(AuthAction.ShowError(error.message.toString()))
                             }
+                            _uiState.update { AuthState.Data }
                         }
                     )
                 }
             }
+
             is AuthIntent.TextInput -> Unit
             is AuthIntent.CheckLogIntent -> {
                 viewModelScope.launch {
                     _uiState.update { AuthState.Loading }
                     authFlow().collect {
                         Log.d("AnnaKonda", it)
-                        if (it != "0"){
+                        if (it != "0") {
+                            _actionFlow.emit(AuthAction.LogIn)
                             _uiState.update { AuthState.LoggedIn }
                         } else {
+                            _actionFlow.emit(AuthAction.ShowError(App.context.getString(R.string.auth_wrong_code)))
                             _uiState.update { AuthState.Data }
                         }
                     }
@@ -57,5 +64,4 @@ class AuthViewModel : ViewModel() {
             }
         }
     }
-
 }

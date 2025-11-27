@@ -4,4 +4,6 @@
     <string name="auth_title">Привет! Введи код для авторизации</string>
     <string name="auth_label">Код</string>
     <string name="auth_sign_in">Войти</string>
+    <string name="auth_wrong_code">Введён неверный код</string>
+    <string name="auth_nasty_code">Неправильный формат кода</string>
 </resources>
