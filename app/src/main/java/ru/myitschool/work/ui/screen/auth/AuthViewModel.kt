@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.myitschool.work.App
 import ru.myitschool.work.R
+import ru.myitschool.work.core.Utils.Companion.CheckCodeInput
 import ru.myitschool.work.data.repo.AuthRepository
 import ru.myitschool.work.data.source.DataStoreDataSource.authFlow
 import ru.myitschool.work.domain.auth.CheckAndSaveAuthCodeUseCase
@@ -46,14 +47,24 @@ class AuthViewModel : ViewModel() {
                 }
             }
 
-            is AuthIntent.TextInput -> Unit
+            is AuthIntent.TextInput -> {
+                viewModelScope.launch {
+                    authFlow().collect {
+                        if (CheckCodeInput(intent.text)) {
+                            _actionFlow.emit(AuthAction.AuthBtnEnabled(true))
+                        } else {
+                            _actionFlow.emit(AuthAction.AuthBtnEnabled(false))
+                        }
+                    }
+                }
+            }
             is AuthIntent.CheckLogIntent -> {
                 viewModelScope.launch {
                     _uiState.update { AuthState.Loading }
                     authFlow().collect {
                         Log.d("AnnaKonda", it)
                         if (it != "0") {
-                            _actionFlow.emit(AuthAction.LogIn)
+                            _actionFlow.emit(AuthAction.LogIn(true))
                             _uiState.update { AuthState.LoggedIn }
                         } else {
                             _actionFlow.emit(AuthAction.ShowError(App.context.getString(R.string.auth_wrong_code)))

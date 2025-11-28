@@ -34,6 +34,7 @@ import ru.myitschool.work.App
 import ru.myitschool.work.R
 import ru.myitschool.work.core.OurConstants.SHABLON
 import ru.myitschool.work.core.TestIds
+import ru.myitschool.work.core.Utils
 import ru.myitschool.work.ui.nav.MainScreenDestination
 
 @Composable
@@ -50,7 +51,9 @@ fun AuthScreen(
 
     LaunchedEffect(event.value) {
         if (event.value is AuthAction.LogIn) {
-            navController.navigate(MainScreenDestination)
+            if ((event.value as AuthAction.LogIn).isLogged) {
+                navController.navigate(MainScreenDestination)
+            }
         }
     }
     Log.d("AnnaKonda", state.javaClass.toString())
@@ -88,12 +91,16 @@ private fun Content(
 ) {
     var inputText by remember { mutableStateOf("") }
     var errorText: String? by remember { mutableStateOf(null) }
+    var btnEnabled: Boolean by remember { mutableStateOf(false) }
 
     val event = viewModel.actionFlow.collectAsState(initial = null)
 
     LaunchedEffect(event.value) {
         if (event.value is AuthAction.ShowError) {
             errorText = (event.value as AuthAction.ShowError).message
+        } else if (event.value is AuthAction.AuthBtnEnabled){
+            Log.d("AnnaKonda", btnEnabled.toString())
+            btnEnabled = if ((event.value as AuthAction.AuthBtnEnabled).enabled){ true } else { false }
         }
     }
 
@@ -115,13 +122,13 @@ private fun Content(
             .testTag(TestIds.Auth.SIGN_BUTTON)
             .fillMaxWidth(),
         onClick = {
-            if (!inputText.isEmpty() && inputText.length == 4 && inputText.matches(Regex(SHABLON))) {
+            if (Utils.CheckCodeInput(inputText)) {
                 viewModel.onIntent(AuthIntent.Send(inputText))
             } else {
                 errorText = App.context.getString(R.string.auth_nasty_code)
             }
         },
-        enabled = true
+        enabled = btnEnabled
 
     ) { Text(stringResource(R.string.auth_sign_in)) }
     if (errorText != null) {
