@@ -1,17 +1,21 @@
 package ru.myitschool.work.ui.screen.main
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
+import ru.myitschool.work.core.TestIds
 import java.text.SimpleDateFormat
 import java.util.*
 import ru.myitschool.work.ui.nav.BookScreenDestination
@@ -77,7 +81,9 @@ fun MainScreen(
             // Текстовое поле с ошибкой (main_error)
             Text(
                 text = errorMessage,
-                color = MaterialTheme.colorScheme.error
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.testTag(TestIds.Main.ERROR)
+
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -103,7 +109,7 @@ fun MainScreen(
                 Image(
                     painter = painterResource(id = android.R.drawable.ic_menu_gallery),
                     contentDescription = "Фото",
-                    modifier = Modifier.size(64.dp)
+                    modifier = Modifier.size(64.dp).testTag(TestIds.Main.PROFILE_IMAGE)
                 )
 
                 Spacer(modifier = Modifier.width(16.dp))
@@ -112,7 +118,7 @@ fun MainScreen(
                 Text(
                     text = userName,
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).testTag(TestIds.Main.PROFILE_NAME),
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
@@ -122,9 +128,12 @@ fun MainScreen(
                     userName = ""
                     bookingItems = emptyList()
                     navController.navigate("auth") { popUpTo(0) }
-                }) {
+                },
+                    modifier = Modifier.testTag(TestIds.Main.LOGOUT_BUTTON)
+                ) {
                     Text("Выход")
                 }
+
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -137,7 +146,8 @@ fun MainScreen(
                 // Кнопка обновления (main_refresh_button)
                 Button(
                     onClick = { loadData() },
-                    enabled = !isLoading
+                    enabled = !isLoading,
+                    modifier = Modifier.testTag(TestIds.Main.REFRESH_BUTTON)
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(
@@ -148,9 +158,11 @@ fun MainScreen(
                         Text("Обновить")
                     }
                 }
-
+                // кнопка бронирования
                 Button(
-                    onClick = { navController.navigate(BookScreenDestination) }
+                    onClick = { navController.navigate(BookScreenDestination)
+                    },
+                    modifier = Modifier.testTag(TestIds.Main.ADD_BUTTON)
                 ) {
                     Text("Перейти к бронированию")
                 }
@@ -160,9 +172,13 @@ fun MainScreen(
 
             // Список бронирований
             if (bookingItems.isNotEmpty()) {
-                LazyColumn(modifier = Modifier.weight(1f)) {
-                    items(bookingItems) { item ->
+                LazyColumn(
+                    modifier = Modifier.weight(1f)
+
+                ) {
+                    itemsIndexed(bookingItems) { index, item ->
                         // Элемент списка (main_book_pos_{index})
+                        Log.d("Nicoly", index.toString())
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -171,11 +187,12 @@ fun MainScreen(
                                 containerColor = MaterialTheme.colorScheme.surfaceVariant
                             )
                         ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
+                            Column(modifier = Modifier.padding(16.dp).testTag(TestIds.Main.getIdItemByPosition(index))) {
                                 // Дата бронирования (main_item_date)
                                 Text(
                                     text = "Дата: ${item.date}",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.testTag(TestIds.Main.ITEM_DATE)
                                 )
 
                                 Spacer(modifier = Modifier.height(4.dp))
@@ -183,7 +200,8 @@ fun MainScreen(
                                 // Место бронирования (main_item_place)
                                 Text(
                                     text = "Место: ${item.place}",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.testTag(TestIds.Main.ITEM_PLACE)
                                 )
                             }
                         }
