@@ -2,10 +2,7 @@ package ru.myitschool.work.ui.screen
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.foundation.layout.Box
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -36,10 +33,21 @@ fun AppNavHost(
             AuthScreen(navController = navController)
         }
         composable<MainScreenDestination> {
-            MainScreen(navController = navController)
+            MainScreen(
+                navController = navController,
+                onNavigateToBooking = {
+                    navController.navigate(BookScreenDestination)
+                }
+            )
         }
         composable<BookScreenDestination> {
-            BookScreen(navController = navController)
+            BookScreen(
+                onBack = { navController.popBackStack() },
+                onBookingSuccess = {
+                    // Возвращаемся на главный экран и обновляем его
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }
