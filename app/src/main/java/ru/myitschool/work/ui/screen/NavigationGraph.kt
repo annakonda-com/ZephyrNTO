@@ -33,12 +33,7 @@ fun AppNavHost(
             AuthScreen(navController = navController)
         }
         composable<MainScreenDestination> {
-            MainScreen(
-                navController = navController,
-                onNavigateToBooking = {
-                    navController.navigate(BookScreenDestination)
-                }
-            )
+            MainScreen(navController = navController)
         }
         composable<BookScreenDestination> {
             BookScreen(

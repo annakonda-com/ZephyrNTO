@@ -47,7 +47,7 @@ class AuthViewModel : ViewModel() {
                 }
             }
 
-            is AuthIntent.TextInput -> {
+            is AuthIntent.TextInput -> {    
                 viewModelScope.launch {
                     authFlow().collect {
                         if (CheckCodeInput(intent.text)) {

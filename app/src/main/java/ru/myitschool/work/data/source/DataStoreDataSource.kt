@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import ru.myitschool.work.App
 import ru.myitschool.work.core.OurConstants.DS_AUTH_KEY
@@ -28,7 +29,20 @@ object DataStoreDataSource {
         App.context.dataStore.updateData {
             it.toMutablePreferences().also { preferences ->
                 preferences[AUTH_KEY] = code
-                Log.d("AnnaKonda", "Code added to ds")
+            }
+        }
+    }
+
+    suspend fun getAuthCode(): String {
+        return App.context.dataStore.data.map { preferences ->
+            preferences[AUTH_KEY] ?: ""
+        }.first()
+    }
+
+    suspend fun logOut() {
+        App.context.dataStore.updateData {
+            it.toMutablePreferences().also { preferences ->
+                preferences.remove(AUTH_KEY)
             }
         }
     }
