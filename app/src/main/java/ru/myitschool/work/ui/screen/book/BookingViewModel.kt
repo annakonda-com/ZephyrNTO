@@ -10,8 +10,8 @@ import java.time.LocalDate
 
 class BookingViewModel : ViewModel() {
 
-    private val _uiState = MutableStateFlow(BookingUiState())
-    val uiState: StateFlow<BookingUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(BookingState())
+    val uiState: StateFlow<BookingState> = _uiState.asStateFlow()
 
     init {
         loadBookingData()

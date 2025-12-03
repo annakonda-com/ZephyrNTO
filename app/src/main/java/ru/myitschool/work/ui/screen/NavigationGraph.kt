@@ -8,10 +8,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import ru.myitschool.work.data.source.DataStoreDataSource.authFlow
 import ru.myitschool.work.ui.nav.AuthScreenDestination
 import ru.myitschool.work.ui.nav.BookScreenDestination
 import ru.myitschool.work.ui.nav.MainScreenDestination
 import ru.myitschool.work.ui.screen.auth.AuthScreen
+import ru.myitschool.work.ui.screen.auth.AuthViewModel
 import ru.myitschool.work.ui.screen.book.BookScreen
 import ru.myitschool.work.ui.screen.main.MainScreen
 
@@ -31,12 +33,7 @@ fun AppNavHost(
             AuthScreen(navController = navController)
         }
         composable<MainScreenDestination> {
-            MainScreen(
-                navController = navController,
-                onNavigateToBooking = {
-                    navController.navigate(BookScreenDestination)
-                }
-            )
+            MainScreen(navController = navController)
         }
         composable<BookScreenDestination> {
             BookScreen(

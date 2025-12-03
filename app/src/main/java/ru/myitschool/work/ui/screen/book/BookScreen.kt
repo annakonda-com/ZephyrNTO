@@ -28,7 +28,7 @@ import ru.myitschool.work.core.TestIds
 
 @Composable
 fun BookingScreen(
-    uiState: BookingUiState, // состояние интерфейса
+    uiState: BookingState, // состояние интерфейса
     onSelectDate: (LocalDate) -> Unit, // callback при выборе даты
     onSelectPlace: (String) -> Unit, // callback при выборе места
     onBook: () -> Unit, // callback при бронировании
@@ -139,22 +139,15 @@ fun BookingScreen(
     }
 }
 
-// Модель состояния интерфейса
-data class BookingUiState(
-    val dates: List<LocalDate> = emptyList(), // список доступных дат
-    val places: Map<LocalDate, List<String>> = emptyMap(), // места по датам
-    val selectedDate: LocalDate? = null, // выбранная дата
-    val selectedPlace: String? = null, // выбранное место
-    val isError: Boolean = false, // флаг ошибки
-    val errorMessage: String? = null // сообщение об ошибке
-)
+
+
 
 @Composable
 fun BookScreen(
     onBack: () -> Unit, // callback при возврате назад
     onBookingSuccess: () -> Unit // callback при успешном бронировании
 ) {
-    val viewModel: BookingViewModel = viewModel()
+    val viewModel: BookingViewModel = BookingViewModel()
     val uiState by viewModel.uiState.collectAsState()
 
     BookingScreen(
