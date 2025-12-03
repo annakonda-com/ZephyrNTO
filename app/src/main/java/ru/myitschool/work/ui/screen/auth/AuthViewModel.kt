@@ -38,6 +38,7 @@ class AuthViewModel : ViewModel() {
                         },
                         onFailure = { error ->
                             error.printStackTrace()
+                            error.message?.let { Log.d("AnnaKonda", it) }
                             if (error.message != null) {
                                 _actionFlow.emit(AuthAction.ShowError(error.message.toString()))
                             }

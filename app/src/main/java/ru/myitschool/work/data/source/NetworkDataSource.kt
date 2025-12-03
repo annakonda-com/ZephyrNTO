@@ -35,10 +35,12 @@ object NetworkDataSource {
 
     suspend fun checkAuth(code: String): Result<Boolean> = withContext(Dispatchers.IO) {
         return@withContext runCatching {
-            val response = client.get(getUrl(code, Constants.AUTH_URL)) // TODO: Отпрвка запроса на сервер
+            val response = client.get(getUrl(code, Constants.AUTH_URL))
+
             when (response.status) {
                 HttpStatusCode.OK -> true
-                else -> error(response.bodyAsText())
+                HttpStatusCode.Unauthorized, HttpStatusCode.BadRequest -> false
+                else -> error("Request error: ${response.bodyAsText()}")
             }
         }
     }
