@@ -38,7 +38,7 @@ fun AppNavHost(
         composable<BookScreenDestination> {
             BookScreen(
                 onBack = { navController.popBackStack() },
-                onBookingSuccess = {
+                onBookSuccess = {
                     // Возвращаемся на главный экран и обновляем его
                     navController.popBackStack()
                 }

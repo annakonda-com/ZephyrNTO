@@ -1,39 +1,74 @@
 package ru.myitschool.work.ui.screen.book
 
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.material3.Button
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.Tab
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.viewmodel.compose.viewModel
 import ru.myitschool.work.core.TestIds
 
 @Composable
-fun BookingScreen(
-    uiState: BookingState, // состояние интерфейса
-    onSelectDate: (LocalDate) -> Unit, // callback при выборе даты
-    onSelectPlace: (String) -> Unit, // callback при выборе места
-    onBook: () -> Unit, // callback при бронировании
-    onBack: () -> Unit, // callback при нажатии "Назад"
-    onRefresh: () -> Unit // callback при обновлении
+fun BookScreen(
+    onBack: () -> Unit,
+    onBookSuccess: () -> Unit
+) {
+    val viewModel: BookViewModel = viewModel()
+    val uiState by viewModel.uiState.collectAsState()
+
+    // Обработка действий
+    val event = viewModel.actionFlow.collectAsState(initial = null)
+    LaunchedEffect(event.value) {
+        when (event.value) {
+            is BookAction.BookSuccess -> {
+                onBookSuccess()
+            }
+            else -> {}
+        }
+    }
+
+    // Загрузка начальных данных
+    LaunchedEffect(Unit) {
+        viewModel.onIntent(BookIntent.LoadData)
+    }
+
+    when (uiState) {
+        is BookState.Loading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
+        is BookState.Data -> {
+            BookContentScreen(
+                uiState = uiState as BookState.Data,
+                onSelectDate = { date -> viewModel.onIntent(BookIntent.SelectDate(date)) },
+                onSelectPlace = { place -> viewModel.onIntent(BookIntent.SelectPlace(place)) },
+                onBook = { viewModel.onIntent(BookIntent.BookPlace) },
+                onBack = onBack,
+                onRefresh = { viewModel.onIntent(BookIntent.Refresh) }
+            )
+        }
+    }
+}
+
+@Composable
+fun BookContentScreen(
+    uiState: BookState.Data,
+    onSelectDate: (LocalDate) -> Unit,
+    onSelectPlace: (String) -> Unit,
+    onBook: () -> Unit,
+    onBack: () -> Unit,
+    onRefresh: () -> Unit
 ) {
     // Сортировка дат по порядку
     val sortedDates = uiState.dates.sorted()
@@ -45,7 +80,7 @@ fun BookingScreen(
         if (availableDates.isNotEmpty()) {
             ScrollableTabRow(
                 selectedTabIndex = availableDates.indexOf(uiState.selectedDate),
-                ) {
+            ) {
                 availableDates.forEachIndexed { index, date ->
                     Tab(
                         selected = date == uiState.selectedDate,
@@ -137,28 +172,4 @@ fun BookingScreen(
             Text("Назад")
         }
     }
-}
-
-
-
-
-@Composable
-fun BookScreen(
-    onBack: () -> Unit, // callback при возврате назад
-    onBookingSuccess: () -> Unit // callback при успешном бронировании
-) {
-    val viewModel: BookingViewModel = BookingViewModel()
-    val uiState by viewModel.uiState.collectAsState()
-
-    BookingScreen(
-        uiState = uiState,
-        onSelectDate = { date -> viewModel.selectDate(date) },
-        onSelectPlace = { place -> viewModel.selectPlace(place) },
-        onBook = {
-            viewModel.bookPlace()
-            onBookingSuccess()
-        },
-        onBack = onBack,
-        onRefresh = { viewModel.refresh() }
-    )
 }
