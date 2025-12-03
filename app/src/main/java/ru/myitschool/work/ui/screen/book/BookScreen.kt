@@ -24,6 +24,7 @@ import java.time.format.DateTimeFormatter
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ru.myitschool.work.core.TestIds
 
 @Composable
 fun BookingScreen(
@@ -42,7 +43,9 @@ fun BookingScreen(
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         // Вкладки для выбора дат
         if (availableDates.isNotEmpty()) {
-            ScrollableTabRow(selectedTabIndex = availableDates.indexOf(uiState.selectedDate)) {
+            ScrollableTabRow(
+                selectedTabIndex = availableDates.indexOf(uiState.selectedDate),
+                ) {
                 availableDates.forEachIndexed { index, date ->
                     Tab(
                         selected = date == uiState.selectedDate,
@@ -50,10 +53,10 @@ fun BookingScreen(
                         text = {
                             Text(
                                 text = date.format(DateTimeFormatter.ofPattern("dd.MM")),
-                                modifier = Modifier.testTag("book_date_pos_$index")
+                                modifier = Modifier.testTag(TestIds.Book.getIdDateItemByPosition(index))
                             )
                         },
-                        modifier = Modifier.testTag("book_date")
+                        modifier = Modifier.testTag(TestIds.Book.ITEM_DATE)
                     )
                 }
             }
@@ -75,17 +78,17 @@ fun BookingScreen(
                                 selected = uiState.selectedPlace == place,
                                 onClick = { onSelectPlace(place) }
                             )
-                            .testTag("book_place_pos_$index"),
+                            .testTag(TestIds.Book.getIdPlaceItemByPosition(index)),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = place,
-                            modifier = Modifier.weight(1f).testTag("book_place_text")
+                            modifier = Modifier.weight(1f).testTag(TestIds.Book.ITEM_PLACE_TEXT)
                         )
                         RadioButton(
                             selected = uiState.selectedPlace == place,
                             onClick = { onSelectPlace(place) },
-                            modifier = Modifier.testTag("book_place_selector")
+                            modifier = Modifier.testTag(TestIds.Book.ITEM_PLACE_SELECTOR)
                         )
                     }
                 }
@@ -96,7 +99,7 @@ fun BookingScreen(
         if (availableDates.isEmpty() && !uiState.isError) {
             Text(
                 text = "Всё забронировано",
-                modifier = Modifier.testTag("book_empty")
+                modifier = Modifier.testTag(TestIds.Book.EMPTY)
             )
         }
 
@@ -105,12 +108,12 @@ fun BookingScreen(
             Text(
                 text = uiState.errorMessage ?: "Ошибка загрузки",
                 color = Color.Red,
-                modifier = Modifier.testTag("book_error")
+                modifier = Modifier.testTag(TestIds.Book.ERROR)
             )
 
             Button(
                 onClick = onRefresh,
-                modifier = Modifier.testTag("book_refresh_button")
+                modifier = Modifier.testTag(TestIds.Book.REFRESH_BUTTON)
             ) {
                 Text("Обновить")
             }
@@ -123,13 +126,13 @@ fun BookingScreen(
             Button(
                 onClick = onBook,
                 enabled = uiState.selectedPlace != null, // активна только при выбранном месте
-                modifier = Modifier.fillMaxWidth().testTag("book_book_button")
+                modifier = Modifier.fillMaxWidth().testTag(TestIds.Book.BOOK_BUTTON)
             ) { Text("Забронировать") }
         }
 
         Button(
             onClick = onBack,
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp).testTag("book_back_button")
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp).testTag(TestIds.Book.BACK_BUTTON)
         ) {
             Text("Назад")
         }
