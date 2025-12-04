@@ -19,7 +19,6 @@ val AUTH_KEY = stringPreferencesKey(DS_AUTH_KEY)
 
 object DataStoreDataSource {
     fun authFlow(): Flow<String> {
-        Log.d("AnnaKonda", "Code is checking")
         return App.context.dataStore.data.map { preferences ->
             (preferences[AUTH_KEY] ?: 0).toString()
         }

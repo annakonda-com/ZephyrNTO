@@ -1,5 +1,6 @@
 package ru.myitschool.work.data.source
 
+import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -39,7 +40,7 @@ object NetworkDataSource {
 
             when (response.status) {
                 HttpStatusCode.OK -> true
-                HttpStatusCode.Unauthorized, HttpStatusCode.BadRequest -> false
+                HttpStatusCode.Unauthorized -> error("Wrong code!")
                 else -> error("Request error: ${response.bodyAsText()}")
             }
         }

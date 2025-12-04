@@ -7,9 +7,7 @@ import ru.myitschool.work.data.repo.AuthRepository
     ) {
         suspend operator fun invoke(
             text: String
-        ): Result<Unit> {
-            return repository.checkAndSave(text).mapCatching { success ->
-                if (!success) error("Code is incorrect")
-            }
+        ): Result<Boolean> {
+            return repository.checkAndSave(text)
         }
     }

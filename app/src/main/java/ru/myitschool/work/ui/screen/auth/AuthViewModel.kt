@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.myitschool.work.App
@@ -24,7 +25,7 @@ class AuthViewModel : ViewModel() {
     private val _uiState = MutableStateFlow<AuthState>(AuthState.Data)
     val uiState: StateFlow<AuthState> = _uiState.asStateFlow()
 
-    private val _actionFlow: MutableSharedFlow<AuthAction> = MutableSharedFlow()
+    private val _actionFlow: MutableSharedFlow<AuthAction> = MutableSharedFlow(replay = 1)
     val actionFlow: SharedFlow<AuthAction> = _actionFlow
 
     fun onIntent(intent: AuthIntent) {
@@ -38,17 +39,17 @@ class AuthViewModel : ViewModel() {
                         },
                         onFailure = { error ->
                             error.printStackTrace()
-                            error.message?.let { Log.d("AnnaKonda", it) }
                             if (error.message != null) {
-                                _actionFlow.emit(AuthAction.ShowError(error.message.toString()))
+                                _actionFlow.emit(AuthAction.ShowError(error.message))
+                                _uiState.update { AuthState.Data }
                             }
-                            _uiState.update { AuthState.Data }
+
                         }
                     )
                 }
             }
 
-            is AuthIntent.TextInput -> {    
+            is AuthIntent.TextInput -> {
                 viewModelScope.launch {
                     authFlow().collect {
                         if (CheckCodeInput(intent.text)) {
@@ -59,19 +60,18 @@ class AuthViewModel : ViewModel() {
                     }
                 }
             }
+
             is AuthIntent.CheckLogIntent -> {
                 viewModelScope.launch {
                     _uiState.update { AuthState.Loading }
-                    authFlow().collect {
-                        Log.d("AnnaKonda", it)
-                        if (it != "0") {
-                            _actionFlow.emit(AuthAction.LogIn(true))
-                            _uiState.update { AuthState.LoggedIn }
-                        } else {
-                            _actionFlow.emit(AuthAction.ShowError(App.context.getString(R.string.auth_wrong_code)))
-                            _uiState.update { AuthState.Data }
-                        }
+                    val authCode = authFlow().first()
+                    if (authCode != "0") {
+                        _actionFlow.emit(AuthAction.LogIn(true))
+                        _uiState.update { AuthState.LoggedIn }
+                    } else {
+                        _uiState.update { AuthState.Data }
                     }
+
                 }
             }
         }

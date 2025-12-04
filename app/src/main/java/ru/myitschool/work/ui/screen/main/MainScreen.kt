@@ -39,7 +39,6 @@ fun MainScreen(
             errorMessage = (event.value as MainAction.ShowError).message
         }
     }
-    Log.d("AnnaKonda", errorMessage.toString())
     // Если ошибка - показываем только ошибку и кнопку обновления
     if (errorMessage != null) {
         ErrorScreen(viewModel = viewModel, navController = navController, errorMessage)
@@ -87,7 +86,6 @@ fun DefaultScreen(viewModel: MainViewModel,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Фото пользователя (main_photo)
-                employee?.photoUrl?.let { msg -> Log.d("AnnaKonda", msg) }
                 AsyncImage(
                     model = employee?.photoUrl ?: "",
                     contentDescription = "Фото",

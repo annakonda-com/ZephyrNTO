@@ -46,16 +46,7 @@ fun AuthScreen(
         viewModel.onIntent(AuthIntent.CheckLogIntent)
     }
 
-    val event = viewModel.actionFlow.collectAsState(initial = null)
 
-    LaunchedEffect(event.value) {
-        if (event.value is AuthAction.LogIn) {
-            if ((event.value as AuthAction.LogIn).isLogged) {
-                navController.navigate(MainScreenDestination)
-            }
-        }
-    }
-    Log.d("AnnaKonda", state.javaClass.toString())
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -69,7 +60,7 @@ fun AuthScreen(
             textAlign = TextAlign.Center
         )
         when (val currentState = state) {
-            is AuthState.Data -> Content(viewModel, currentState)
+            is AuthState.Data -> Content(viewModel, currentState, navController)
             is AuthState.Loading -> {
                 CircularProgressIndicator(
                     modifier = Modifier.size(64.dp)
@@ -86,7 +77,8 @@ fun AuthScreen(
 @Composable
 private fun Content(
     viewModel: AuthViewModel,
-    state: AuthState.Data
+    state: AuthState.Data,
+    navController: NavController
 ) {
     var inputText by remember { mutableStateOf("") }
     var errorText: String? by remember { mutableStateOf(null) }
@@ -94,15 +86,22 @@ private fun Content(
 
     val event = viewModel.actionFlow.collectAsState(initial = null)
 
-    LaunchedEffect(event.value) {
-        if (event.value is AuthAction.ShowError) {
-            errorText = (event.value as AuthAction.ShowError).message
-        } else if (event.value is AuthAction.AuthBtnEnabled){
-            Log.d("AnnaKonda", btnEnabled.toString())
-            btnEnabled = if ((event.value as AuthAction.AuthBtnEnabled).enabled){ true } else { false }
+    // В UI (Composable)
+    val actionFlow = viewModel.actionFlow // SharedFlow<AuthAction>
+
+    LaunchedEffect(Unit) {
+        // Collect Flow<T> здесь, чтобы потреблять все события
+        actionFlow.collect { action ->
+            when (action) {
+                is AuthAction.ShowError -> {
+                    errorText = action.message
+                }
+                is AuthAction.AuthBtnEnabled -> {
+                    btnEnabled = action.enabled
+                } else -> {}
+            }
         }
     }
-
     Spacer(modifier = Modifier.size(16.dp))
     TextField(
         modifier = Modifier
