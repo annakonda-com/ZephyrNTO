@@ -6,4 +6,23 @@
     <string name="auth_sign_in">Войти</string>
     <string name="auth_wrong_code">Введён неверный код</string>
     <string name="auth_nasty_code">Неправильный формат кода</string>
+
+    <string name="error_request">Ошибка запроса</string>
+    <string name="error_empty_server_response">Пустой ответ от сервера</string>
+    <string name="error_parsing">Ошибка парсинга</string>
+    <string name="error_missing_name_field">В ответе отсутствует поле name</string>
+    <string name="error_missing_photo_url_field">В ответе отсутствует поле photoUrl</string>
+    <string name="error_missing_booking_field">В ответе отсутствует поле booking</string>
+    <string name="error_missing_id_field">В ответе отсутствует поле id</string>
+    <string name="error_missing_place_field">В ответе отсутствует поле place для даты</string>
+    <string name="error_empty_place_field">В ответе поле place пусто для даты</string>
+    <string name="error_booking_list_empty">Список бронирований пуст</string>
+    <string name="error_missing_id_in_place">В информации о месте отсутствует id</string>
+    <string name="error_missing_place_in_place">В информации о месте отсутствует place</string>
+    <string name="error_booking">Ошибка бронирования</string>
+    <string name="error_booking_default">Ошибка бронирования</string>
+
+    <string name="error_no_available_dates">Нет доступных дат для бронирования</string>
+    <string name="error_loading_data">Ошибка загрузки данных</string>
+
 </resources>

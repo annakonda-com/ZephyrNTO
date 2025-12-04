@@ -19,9 +19,6 @@ import ru.myitschool.work.ui.screen.auth.AuthIntent
 import ru.myitschool.work.ui.screen.auth.AuthState
 
 class MainViewModel : ViewModel() {
-    init {
-        loadData()
-    }
     private val repository by lazy{ MainRepository() }
     private val getUserDataUseCase by lazy { GetUserDataUseCase(repository) }
 
@@ -30,6 +27,10 @@ class MainViewModel : ViewModel() {
 
     private val _actionFlow: MutableSharedFlow<MainAction> = MutableSharedFlow()
     val actionFlow: SharedFlow<MainAction> = _actionFlow
+
+    init {
+        loadData()
+    }
 
     fun onIntent(intent: MainIntent) {
         when (intent) {
@@ -59,6 +60,7 @@ class MainViewModel : ViewModel() {
                     if (error.message != null) {
                         _actionFlow.emit(MainAction.ShowError(error.message.toString()))
                     }
+                    _uiState.update { MainState.Data(null) }
                 }
             )
         }

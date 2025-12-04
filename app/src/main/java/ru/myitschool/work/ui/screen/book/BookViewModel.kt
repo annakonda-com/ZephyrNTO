@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ru.myitschool.work.App
+import ru.myitschool.work.R
 import ru.myitschool.work.data.entity.Place
 import ru.myitschool.work.data.repo.BookingRepository
 import ru.myitschool.work.domain.book.CreateBookingUseCase
@@ -55,7 +57,7 @@ class BookViewModel : ViewModel() {
                         _uiState.update {
                             BookState.Data(
                                 isError = true,
-                                errorMessage = "Нет доступных дат для бронирования"
+                                errorMessage = App.context.getString(R.string.error_no_available_dates)
                             )
                         }
                     } else {
@@ -77,7 +79,7 @@ class BookViewModel : ViewModel() {
                     _uiState.update {
                         BookState.Data(
                             isError = true,
-                            errorMessage = error.message ?: "Ошибка загрузки данных"
+                            errorMessage = error.message ?: App.context.getString(R.string.error_loading_data)
                         )
                     }
                 }
@@ -111,10 +113,9 @@ class BookViewModel : ViewModel() {
     }
 
     private fun bookPlace() {
-        // Раскомментируйте и измените этот блок
         val currentState = _uiState.value
         if (currentState is BookState.Data && currentState.selectedPlace != null && currentState.selectedDate != null) {
-            val placeId = selectedPlaceId ?: return // Дополнительная проверка
+            val placeId = selectedPlaceId ?: return
             val date = currentState.selectedDate
 
             viewModelScope.launch(Dispatchers.IO) {
@@ -124,7 +125,7 @@ class BookViewModel : ViewModel() {
                     },
                     onFailure = { error ->
                         error.printStackTrace()
-                        _actionFlow.emit(BookAction.ShowError(error.message ?: "Ошибка бронирования"))
+                        _actionFlow.emit(BookAction.ShowError(error.message ?: App.context.getString(R.string.error_booking_default)))
                     }
                 )
             }

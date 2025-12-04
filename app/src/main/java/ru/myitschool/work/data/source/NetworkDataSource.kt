@@ -19,6 +19,8 @@ import kotlinx.serialization.json.Json
 import ru.myitschool.work.core.Constants
 import ru.myitschool.work.data.entity.Employee
 import kotlinx.serialization.json.*
+import ru.myitschool.work.App
+import ru.myitschool.work.R
 import ru.myitschool.work.data.entity.Booking
 import ru.myitschool.work.data.entity.Place
 import java.time.LocalDate
@@ -45,11 +47,12 @@ object NetworkDataSource {
 
             when (response.status) {
                 HttpStatusCode.OK -> true
-                HttpStatusCode.Unauthorized -> error("Wrong code!")
-                else -> error("Request error: ${response.bodyAsText()}")
+                HttpStatusCode.Unauthorized -> error(App.context.getString(R.string.auth_wrong_code))
+                else -> error(App.context.getString(R.string.error_request, response.bodyAsText()))
             }
         }
     }
+
     suspend fun getUserInfo(code: String): Result<Employee> = withContext(Dispatchers.IO) {
         return@withContext runCatching {
             val response = client.get(getUrl(code, Constants.INFO_URL))
@@ -58,21 +61,21 @@ object NetworkDataSource {
                 HttpStatusCode.OK -> {
                     val json = response.bodyAsText()
                     if (json.isBlank()) {
-                        error("Пустой ответ от сервера")
+                        error(App.context.getString(R.string.error_empty_server_response))
                     }
 
                     val jsonObject = try {
                         Json.parseToJsonElement(json).jsonObject
                     } catch (e: Exception) {
-                        error("Ошибка парсинга: ${e.message}")
+                        error(App.context.getString(R.string.error_parsing, e.message))
                     }
                     val name = jsonObject["name"]?.jsonPrimitive?.content
-                        ?: error("Отсутствует поле 'name'")
+                        ?: error(App.context.getString(R.string.error_missing_name_field))
                     val photoUrl = jsonObject["photoUrl"]?.jsonPrimitive?.content
-                        ?: error("Отсутствует поле 'photoUrl'")
+                        ?: error(App.context.getString(R.string.error_missing_photo_url_field))
 
                     val bookingJson = jsonObject["booking"]?.jsonObject
-                        ?: error("Отсутствует поле 'booking' в ответе")
+                        ?: error(App.context.getString(R.string.error_missing_booking_field))
 
                     val employee = Employee(
                         name = name,
@@ -85,12 +88,12 @@ object NetworkDataSource {
                         val date = LocalDate.parse(dateString)
                         val bookingObj = bookingElement.jsonObject
                         val bookingId = bookingObj["id"]?.jsonPrimitive?.long
-                            ?: error("Отсутствует поле id")
+                            ?: error(App.context.getString(R.string.error_missing_id_field))
                         val placeString = bookingObj["place"]?.jsonPrimitive?.content
-                            ?: error("Отсутствует поле 'place' $dateString")
+                            ?: error(App.context.getString(R.string.error_missing_place_field, dateString))
 
                         if (placeString.isBlank()) {
-                            error("Пустое поле 'place' $dateString")
+                            error(App.context.getString(R.string.error_empty_place_field, dateString))
                         }
 
                         val placeId = bookingId
@@ -104,9 +107,9 @@ object NetworkDataSource {
                         )
                         bookingList.add(booking)
                     }
-                    if (bookingList.isEmpty()) {
-                        error("Список бронирований пуст")
-                    }
+                    /* if (bookingList.isEmpty()) {
+                        error(App.context.getString(R.string.error_booking_list_empty))
+                    }*/
                     employee.bookingList.addAll(bookingList)
                     employee
                 }
@@ -130,9 +133,9 @@ object NetworkDataSource {
                         val places = placesArray.jsonArray.map { placeElement ->
                             val placeObj = placeElement.jsonObject
                             val id = placeObj["id"]?.jsonPrimitive?.long
-                                ?: error("Missing 'id' in place")
+                                ?: error(App.context.getString(R.string.error_missing_id_in_place))
                             val placeName = placeObj["place"]?.jsonPrimitive?.content
-                                ?: error("Missing 'place' in place")
+                                ?: error(App.context.getString(R.string.error_missing_place_in_place))
                             Place(id, placeName)
                         }
                         if (places.isNotEmpty()) {
@@ -142,7 +145,7 @@ object NetworkDataSource {
                     availableBookings.toSortedMap()
                 }
 
-                else -> error("Request error: ${response.bodyAsText()}")
+                else -> error(App.context.getString(R.string.error_request, response.bodyAsText()))
             }
         }
     }
@@ -162,7 +165,10 @@ object NetworkDataSource {
 
             when (response.status) {
                 HttpStatusCode.OK -> true
-                else -> error("Ошибка бронирования: ${response.bodyAsText()}")
+                else -> {
+                    val errorBody = response.bodyAsText()
+                    error(if (errorBody.isNotBlank()) App.context.getString(R.string.error_booking, errorBody) else App.context.getString(R.string.error_booking_default))
+                }
             }
         }
     }
