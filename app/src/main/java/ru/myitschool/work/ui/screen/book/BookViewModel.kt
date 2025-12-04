@@ -7,18 +7,29 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ru.myitschool.work.data.entity.Place
+import ru.myitschool.work.data.repo.BookingRepository
+// import ru.myitschool.work.domain.book.CreateBookingUseCase
+import ru.myitschool.work.domain.book.GetAvailableBookingsUseCase
 import java.time.LocalDate
 
 class BookViewModel : ViewModel() {
+    private val repository by lazy { BookingRepository() }
+    private val getAvailableBookingsUseCase by lazy { GetAvailableBookingsUseCase(repository) }
+    // private val createBookingUseCase by lazy { CreateBookingUseCase(repository) }
+
 
     private val _uiState = MutableStateFlow<BookState>(BookState.Loading)
     val uiState: StateFlow<BookState> = _uiState.asStateFlow()
 
     private val _actionFlow = MutableSharedFlow<BookAction>()
     val actionFlow: SharedFlow<BookAction> = _actionFlow
+
+    private var selectedPlaceId: Long? = null
 
     init {
         loadBookData()
@@ -38,86 +49,82 @@ class BookViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { BookState.Loading }
 
-            try {
-                // Временные mock данные
-                val mockDates = listOf(
-                    LocalDate.now().plusDays(1),
-                    LocalDate.now().plusDays(2),
-                    LocalDate.now().plusDays(3)
-                )
-
-                val mockPlaces = mapOf(
-                    mockDates[0] to listOf("Место 1", "Место 2", "Место 3"),
-                    mockDates[1] to listOf("Место 1", "Место 2"),
-                    mockDates[2] to listOf("Место 1")
-                )
-
-                val sortedDates = mockDates.sorted()
-                val availableDates = sortedDates.filter { mockPlaces[it]?.isNotEmpty() == true }
-                val defaultDate = availableDates.firstOrNull()
-
-                _uiState.update {
-                    BookState.Data(
-                        dates = sortedDates,
-                        places = mockPlaces,
-                        selectedDate = defaultDate,
-                        selectedPlace = null,
-                        isError = false,
-                        errorMessage = null
-                    )
+            getAvailableBookingsUseCase().fold(
+                onSuccess = { bookings ->
+                    if (bookings.isEmpty()) {
+                        _uiState.update {
+                            BookState.Data(
+                                isError = true,
+                                errorMessage = "Нет доступных дат для бронирования"
+                            )
+                        }
+                    } else {
+                        val dates = bookings.keys.toList()
+                        _uiState.update {
+                            BookState.Data(
+                                dates = dates,
+                                places = bookings,
+                                selectedDate = dates.first(),
+                                selectedPlace = null,
+                                isError = false,
+                                errorMessage = null
+                            )
+                        }
+                    }
+                },
+                onFailure = { error ->
+                    error.printStackTrace()
+                    _uiState.update {
+                        BookState.Data(
+                            isError = true,
+                            errorMessage = error.message ?: "Ошибка загрузки данных"
+                        )
+                    }
                 }
-            } catch (e: Exception) {
-                _uiState.update {
-                    BookState.Data(
-                        isError = true,
-                        errorMessage = "Ошибка загрузки данных"
-                    )
-                }
-                _actionFlow.emit(BookAction.ShowError("Ошибка загрузки данных"))
-            }
+            )
         }
     }
 
     private fun selectDate(date: LocalDate) {
         _uiState.update { currentState ->
-            when (currentState) {
-                is BookState.Data -> currentState.copy(
+            if (currentState is BookState.Data) {
+                currentState.copy(
                     selectedDate = date,
                     selectedPlace = null
                 )
-                else -> currentState
+            } else {
+                currentState
             }
         }
+        selectedPlaceId = null
     }
 
-    private fun selectPlace(place: String) {
+    private fun selectPlace(place: Place) {
         _uiState.update { currentState ->
-            when (currentState) {
-                is BookState.Data -> currentState.copy(selectedPlace = place)
-                else -> currentState
+            if (currentState is BookState.Data) {
+                currentState.copy(selectedPlace = place)
+            } else {
+                currentState
             }
         }
+        selectedPlaceId = place.id
     }
 
     private fun bookPlace() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                // вызов API для бронирования
-                // временная имитация успеха
-                _actionFlow.emit(BookAction.BookSuccess)
-            } catch (e: Exception) {
-                _uiState.update { currentState ->
-                    when (currentState) {
-                        is BookState.Data -> currentState.copy(
-                            isError = true,
-                            errorMessage = "Ошибка бронирования"
-                        )
-                        else -> currentState
+        /*
+        selectedPlaceId?.let { placeId ->
+            viewModelScope.launch(Dispatchers.IO) {
+                createBookingUseCase(placeId).fold(
+                    onSuccess = {
+                        _actionFlow.emit(BookAction.BookSuccess)
+                    },
+                    onFailure = { error ->
+                        error.printStackTrace()
+                        _actionFlow.emit(BookAction.ShowError(error.message ?: "Ошибка бронирования"))
                     }
-                }
-                _actionFlow.emit(BookAction.ShowError("Ошибка бронирования"))
+                )
             }
-        }
+        }*/
     }
 
     private fun refresh() {

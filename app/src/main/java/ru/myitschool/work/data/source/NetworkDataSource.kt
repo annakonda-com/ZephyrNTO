@@ -109,5 +109,37 @@ object NetworkDataSource {
             }
         }
     }
+
+    suspend fun getAvailableBookings(code: String): Result<Map<LocalDate, List<Place>>> = withContext(Dispatchers.IO) {
+        return@withContext runCatching {
+            val response = client.get(getUrl(code, Constants.BOOKING_URL))
+
+            when (response.status) {
+                HttpStatusCode.OK -> {
+                    val json = response.bodyAsText()
+                    val jsonObject = Json.parseToJsonElement(json).jsonObject
+                    val availableBookings = mutableMapOf<LocalDate, List<Place>>()
+
+                    for ((dateString, placesArray) in jsonObject) {
+                        val date = LocalDate.parse(dateString)
+                        val places = placesArray.jsonArray.map { placeElement ->
+                            val placeObj = placeElement.jsonObject
+                            val id = placeObj["id"]?.jsonPrimitive?.long
+                                ?: error("Missing 'id' in place")
+                            val placeName = placeObj["place"]?.jsonPrimitive?.content
+                                ?: error("Missing 'place' in place")
+                            Place(id, placeName)
+                        }
+                        if (places.isNotEmpty()) {
+                            availableBookings[date] = places
+                        }
+                    }
+                    availableBookings.toSortedMap()
+                }
+
+                else -> error("Request error: ${response.bodyAsText()}")
+            }
+        }
+    }
     private fun getUrl(code: String, targetUrl: String) = "${Constants.HOST}/api/$code$targetUrl"
 }

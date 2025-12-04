@@ -13,6 +13,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import ru.myitschool.work.core.TestIds
+import ru.myitschool.work.data.entity.Place
 
 @Composable
 fun BookScreen(
@@ -65,7 +66,7 @@ fun BookScreen(
 fun BookContentScreen(
     uiState: BookState.Data,
     onSelectDate: (LocalDate) -> Unit,
-    onSelectPlace: (String) -> Unit,
+    onSelectPlace: (Place) -> Unit,
     onBook: () -> Unit,
     onBack: () -> Unit,
     onRefresh: () -> Unit
@@ -117,7 +118,7 @@ fun BookContentScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = place,
+                            text = place.place,
                             modifier = Modifier.weight(1f).testTag(TestIds.Book.ITEM_PLACE_TEXT)
                         )
                         RadioButton(
