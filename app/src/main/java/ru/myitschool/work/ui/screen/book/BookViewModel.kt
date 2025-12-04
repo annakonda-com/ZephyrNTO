@@ -13,14 +13,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.myitschool.work.data.entity.Place
 import ru.myitschool.work.data.repo.BookingRepository
-// import ru.myitschool.work.domain.book.CreateBookingUseCase
+import ru.myitschool.work.domain.book.CreateBookingUseCase
 import ru.myitschool.work.domain.book.GetAvailableBookingsUseCase
 import java.time.LocalDate
 
 class BookViewModel : ViewModel() {
     private val repository by lazy { BookingRepository() }
     private val getAvailableBookingsUseCase by lazy { GetAvailableBookingsUseCase(repository) }
-    // private val createBookingUseCase by lazy { CreateBookingUseCase(repository) }
+    private val createBookingUseCase by lazy { CreateBookingUseCase(repository) }
 
 
     private val _uiState = MutableStateFlow<BookState>(BookState.Loading)
@@ -111,10 +111,14 @@ class BookViewModel : ViewModel() {
     }
 
     private fun bookPlace() {
-        /*
-        selectedPlaceId?.let { placeId ->
+        // Раскомментируйте и измените этот блок
+        val currentState = _uiState.value
+        if (currentState is BookState.Data && currentState.selectedPlace != null && currentState.selectedDate != null) {
+            val placeId = selectedPlaceId ?: return // Дополнительная проверка
+            val date = currentState.selectedDate
+
             viewModelScope.launch(Dispatchers.IO) {
-                createBookingUseCase(placeId).fold(
+                createBookingUseCase (date, placeId).fold(
                     onSuccess = {
                         _actionFlow.emit(BookAction.BookSuccess)
                     },
@@ -124,7 +128,7 @@ class BookViewModel : ViewModel() {
                     }
                 )
             }
-        }*/
+        }
     }
 
     private fun refresh() {

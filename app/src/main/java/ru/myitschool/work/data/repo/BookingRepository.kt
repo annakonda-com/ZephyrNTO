@@ -14,4 +14,12 @@ class BookingRepository {
         }
         return NetworkDataSource.getAvailableBookings(code)
     }
+
+    suspend fun createBooking(date: LocalDate, placeId: Long): Result<Boolean> {
+        val code = DataStoreDataSource.getAuthCode()
+        if (code.isEmpty() || code == "0") {
+            return Result.failure(Exception("Auth code not found"))
+        }
+        return NetworkDataSource.createBooking(code, date, placeId)
+    }
 }

@@ -5,11 +5,16 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import ru.myitschool.work.core.Constants
 import ru.myitschool.work.data.entity.Employee
@@ -138,6 +143,26 @@ object NetworkDataSource {
                 }
 
                 else -> error("Request error: ${response.bodyAsText()}")
+            }
+        }
+    }
+
+    @Serializable
+    private data class CreateBookingBody(val date: String, val placeID: Long)
+
+    suspend fun createBooking(code: String, date: LocalDate, placeId: Long): Result<Boolean> = withContext(Dispatchers.IO) {
+        return@withContext runCatching {
+            // Формируем тело запроса
+            val requestBody = CreateBookingBody(date.toString(), placeId)
+
+            val response = client.post(getUrl(code, Constants.BOOKING_URL)) { // Используем ту же константу BOOKING_URL
+                contentType(ContentType.Application.Json)
+                setBody(requestBody)
+            }
+
+            when (response.status) {
+                HttpStatusCode.OK -> true
+                else -> error("Ошибка бронирования: ${response.bodyAsText()}")
             }
         }
     }
