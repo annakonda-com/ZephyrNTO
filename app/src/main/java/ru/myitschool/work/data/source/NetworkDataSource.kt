@@ -1,5 +1,6 @@
 package ru.myitschool.work.data.source
 
+import android.annotation.SuppressLint
 import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
@@ -151,20 +152,20 @@ object NetworkDataSource {
     }
 
     @Serializable
-    private data class CreateBookingBody(val date: String, val placeID: Long)
+    private data class CreateBookingBody(val date: String, val placeId: Long)
 
     suspend fun createBooking(code: String, date: LocalDate, placeId: Long): Result<Boolean> = withContext(Dispatchers.IO) {
         return@withContext runCatching {
             // Формируем тело запроса
             val requestBody = CreateBookingBody(date.toString(), placeId)
 
-            val response = client.post(getUrl(code, Constants.BOOKING_URL)) { // Используем ту же константу BOOKING_URL
+            val response = client.post(getUrl(code, Constants.BOOK_URL)) {
                 contentType(ContentType.Application.Json)
                 setBody(requestBody)
             }
 
             when (response.status) {
-                HttpStatusCode.OK -> true
+                HttpStatusCode.Created -> true
                 else -> {
                     val errorBody = response.bodyAsText()
                     error(if (errorBody.isNotBlank()) App.context.getString(R.string.error_booking, errorBody) else App.context.getString(R.string.error_booking_default))

@@ -1,5 +1,6 @@
 package ru.myitschool.work.ui.screen.book
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -121,11 +122,22 @@ class BookViewModel : ViewModel() {
             viewModelScope.launch(Dispatchers.IO) {
                 createBookingUseCase (date, placeId).fold(
                     onSuccess = {
+                        Log.d("AnnaKonda", "method is calling")
                         _actionFlow.emit(BookAction.BookSuccess)
                     },
                     onFailure = { error ->
+                        Log.d("AnnaKonda", "ERROR method is calling")
                         error.printStackTrace()
-                        _actionFlow.emit(BookAction.ShowError(error.message ?: App.context.getString(R.string.error_booking_default)))
+                        _uiState.update { currentState ->
+                            if (currentState is BookState.Data) {
+                                currentState.copy(
+                                    isError = true
+                                )
+                            } else {
+                                currentState
+                            }
+                        }
+                        // _actionFlow.emit(BookAction.ShowError(error.message ?: App.context.getString(R.string.error_booking_default)))
                     }
                 )
             }

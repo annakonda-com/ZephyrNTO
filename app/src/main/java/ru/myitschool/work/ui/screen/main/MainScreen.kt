@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import ru.myitschool.work.core.TestIds
@@ -25,7 +26,7 @@ import ru.myitschool.work.ui.nav.BookScreenDestination
 fun MainScreen(
     navController: NavController,
 ) {
-    val viewModel = MainViewModel()
+    val viewModel: MainViewModel = viewModel()
     // Состояния
     val event = viewModel.actionFlow.collectAsState(initial = null)
     // Функция загрузки данных

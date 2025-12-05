@@ -12,14 +12,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.myitschool.work.data.repo.AuthRepository
 import ru.myitschool.work.data.repo.MainRepository
-import ru.myitschool.work.domain.auth.CheckAndSaveAuthCodeUseCase
 import ru.myitschool.work.domain.main.GetUserDataUseCase
-import ru.myitschool.work.ui.screen.auth.AuthAction
-import ru.myitschool.work.ui.screen.auth.AuthIntent
-import ru.myitschool.work.ui.screen.auth.AuthState
 
 class MainViewModel : ViewModel() {
-    private val repository by lazy{ MainRepository() }
+    private val repository by lazy { MainRepository() }
     private val getUserDataUseCase by lazy { GetUserDataUseCase(repository) }
 
     private val _uiState = MutableStateFlow<MainState>(MainState.Loading)
@@ -28,15 +24,12 @@ class MainViewModel : ViewModel() {
     private val _actionFlow: MutableSharedFlow<MainAction> = MutableSharedFlow()
     val actionFlow: SharedFlow<MainAction> = _actionFlow
 
-    init {
-        loadData()
-    }
-
     fun onIntent(intent: MainIntent) {
         when (intent) {
-            is MainIntent.LoadData ->  {
+            is MainIntent.LoadData -> {
                 loadData()
             }
+
             is MainIntent.LogOut -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     _uiState.update { MainState.Data(null) }
@@ -46,7 +39,7 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun loadData() {
+    private fun loadData() {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { MainState.Loading }
 
